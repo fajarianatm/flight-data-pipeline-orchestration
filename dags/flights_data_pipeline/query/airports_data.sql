@@ -1,0 +1,1 @@
+SELECT * FROM bookings.airports_data;
