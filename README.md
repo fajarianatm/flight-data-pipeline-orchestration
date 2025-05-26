@@ -1,40 +1,40 @@
 # Automated Data Pipeline Project
 
-This project is designed to build an automated data pipeline that extracts data from a source database stores it temporarily in an object store, and loads it into a data warehouse. The pipeline will be orchestrated using Apache Airflow.
+This project is designed to automate the process of extracting data from a source database, temporarily storing it in an object store, and loading it into a data warehouse. The pipeline is orchestrated using Apache Airflow to ensure seamless and efficient task automation.
+
 
 ---
 ---
 
 # Objective 
 
-In this repository, I'll focus specifically on how I developed the ELT pipeline, including:
+This repository demonstrates the development of an ELT (Extract, Load, Transform) pipeline, focusing on the following key aspects:
 
-- Developing the ELT script
-
-- Orchestrating and automating the pipeline with Apache Airflow
+- Designing and implementing the ELT process
+- Automating and orchestrating the pipeline using Apache Airflow
 
 ---
 
 # Pipeline Workflow
 
-Before diving into the main, take a look at the image below. This illustrates the workflow I followed to build this project.
+Before diving into the details, please refer to the following diagram to understand the workflow used to construct this project.
 
 ![ELT_DESIGN](records/elt_design.png)
 
 - ## How The Pipeline Works
 
-Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipeline ini akan menggunakan skrip untuk membuat DAG yang berisi 3 task
+The pipeline leverages Apache Airflow for orchestration and automation. The process involves three primary tasks:
 
 - ### Extract Task
-    The Extract task pulls raw data from the source database (flight_src_db) and saves it as CSV files. The output of this task is a set of CSV files containing raw data for each table from the source database and is stored in MinIO
+    This task extracts raw data from the source database (`flight_src_db`) and stores it as CSV files in MinIO. The output consists of individual CSV files for each table from the source database, which are stored in a structured directory within MinIO.
 
 - ### Load Task
-    The Load task takes the extracted data (CSV files) and loads it into 'stg' schema in the warehouse database (flight_wrh_db). Stg schema will stores the raw data exactly as it came from the source database.
+    The Load task retrieves the extracted data (CSV files) and loads it into the `stg` schema of the warehouse database (`flight_wrh_db`). The data in the `stg` schema is kept in its raw form, reflecting the data structure of the source database.
 
 - ### Transform Task
-    The Transform Task performs data transformations based on the design of the data warehouse.
+    The Transform task processes and transforms the raw data into a format suitable for the data warehouse, following the warehouse's design.
 
-    In this step, the raw data from the 'stg' schema is processed and transformed to match the structure and requirements of the data warehouse. Once transformed, the data is loaded into the final schema.
+    In this step, the raw data in the `stg` schema is processed and transformed to meet the structure and requirements of the data warehouse. The transformed data is then loaded into the final schema.
 
 ---
 
@@ -65,7 +65,7 @@ Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipelin
 # Preparations
 
 - ## Directory structure
-    Set up the project directory structure to organize all project scripts. There is no strict rule where to put the folder and file. Still, make the directory understandable
+   Organize the project files to maintain a clean and understandable structure. While there are no rigid guidelines, ensure that the directory is intuitive.
 
     ```
     flight-data-pipeline/
@@ -116,7 +116,7 @@ Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipelin
 
 - ## Setup project environment
 
-    Create and activate python environment to isolate project dependencies.
+    Create and activate a Python virtual environment to isolate project dependencies:
 
     ```
     python3 -m venv .venv
@@ -127,7 +127,7 @@ Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipelin
 
 - ## Install requirements.txt
 
-    Install the dependencies from _requirements.txt_ in the created environment.
+    Install the required dependencies from the `requirements.txt`:
   
     ```
     pip install -r requirements.txt
@@ -143,25 +143,22 @@ Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipelin
         - [Final Schema](flight_wrh_db/init.sql)
 
 - ## Create and Run a Docker Compose
+    - The [_docker_compose.yml_](docker-compose.yml) file is used to set up the databases, MinIO, and Apache Airflow.
+    - Database credentials are stored in the [`.env`](.env) file.
 
-    - Create [_docker_compose.yml_](docker-compose.yml) file to set up databases, minio, and apache airflow.
-    Then store database credentials in [_.env_](.env) file  
-
-    - Run the _docker-compose.yml_ file 
-    
+    - To run the services, execute:
         ```
         docker compose up --build --detach
         ```
 
 - ## Create _.env_ file
-  - Create .env file to store all credential information.
+  - The `.env` file contains credentials and configuration details for various services.
   
   ```
   touch .env
   ```
 
-  - Store database credentials in _.env_ file  
-
+  - Add the following credentials to the `.env` file: 
     
         - Airflow Metadata
         AIRFLOW_DB_USER=
@@ -186,75 +183,73 @@ Pipeline ini menggunakan Apache Airflow untuk orkestrasi dan automisasi. Pipelin
         
 
 - ## Activate the container
+    - **Connect to the Database in DBeaver:**
+        1. Open DBeaver and go to **Database** > **New Database Connection**.
+        2. Select **PostgreSQL** as the database type.
+        3. Enter the required details such as port, database name, username, and password (as defined in your `.env` file).
+        4. Click **Test Connection** to verify the connection.
+        5. If no errors occur, the connection setup is successful.
 
-    - Connect the database to DBeaver
-        - Click **Database** > select **New Database Connection**
-
-        - Select postgreSQL
-
-        - Fill in the port, database, username, and password **as defined in your _.env_**
-
-        - Click **Test Connection**
-
-        - If no errors appear, the database connection is successful  
-    
-    - Check MinIO and Apache Airflow connection on localhost based on docker configuration. On this project is localhost:8081 and localhost:9001
+    - **Check MinIO and Apache Airflow Connections:**
+        - You can check the status of MinIO and Apache Airflow connections on `localhost` based on the configuration in the Docker setup:
+            - MinIO: `localhost:9001`
+            - Apache Airflow: `localhost:8081`
 
 - ## Make Connections on Apache Airflow
-    - After you ensure that your Apache Airflow, MinIO, and databases are ready. Store the credentials and connections parameters of minIO and databases. This will make it easy
-      to manage access to various external systems like MinIO and PostgreSQL (using DBeaver) across different tasks and workflows.
-    - You can create connections on Apache Airflow UI:
-          - Click *Admin*
-          - Select *Connections*
-          - Click *Add New Record*
-          - Specified your connections
-    - After make the connections, check *connection* table on database *airflow_metadata*. The illustration is below:
+    - After ensuring that Apache Airflow, MinIO, and the databases are properly set up and running, the next step is to configure connections in Apache Airflow. Storing these
+      connection credentials and parameters in Apache Airflow will allow easier management of access to external systems such as MinIO and PostgreSQL, which will be used across         different tasks and workflows.
+    - To create connections in Apache Airflow, follow these steps:
+        1. Go to **Admin** in the Airflow UI.
+        2. Select **Connections**.
+        3. Click **Add New Record**.
+        4. Fill in the required details for each connection.
+    - Once the connections are created, you can verify them by checking the `connection` table in the `airflow_metadata` database. Below is an illustration of the connections table:
       ![connection_table](records/connection_table.png)
       
-
 ---
 ---
 
 # ELT Scripts
-    I developed each task separately to (what). All the task script is in [task](dags/flights_data_pipeline/tasks). This process will use Apache Airflow so we have to make script to run the DAG. But before that, I made separated moduls and folder (for transform) so it's easier to manage
+I developed each task separately to facilitate better management and clarity in the pipeline process. All task scripts are stored in the [tasks folder](dags/flights_data_pipeline/tasks). The pipeline is orchestrated using Apache Airflow, which requires scripting to run the Directed Acyclic Graph (DAG). To make the code more modular and easier to manage, I created separate modules and folders, particularly for the transformation process.
 
-  - ### [EXTRACT Task](dags/flights_data_pipeline/tasks/extract.py)
-      
-      - This task will extract data from the source PostgreSQL database and export it to MinIO as CSV files.
-      - Source database is the bookings schema
-      - Use Airflow’s PythonOperator to perform the extraction
-      - Save each table’s data into a structured path in MinIO : /extracted-data/temp/<table_name>.csv.
-      - Extraction tasks should run in parallel.
+### [EXTRACT Task](dags/flights_data_pipeline/tasks/extract.py)
 
-  - ### [LOAD Task](dags/flights_data_pipeline/tasks/load.py)
-      
-      - This task reads data from each CSV file generated by the Extract task and loads it into the staging schemas in the warehouse database.
-      - Read the CSVs from MinIO using MinIO client.
-      - Write the data into a staging schema (Upsert).
-      - Use PythonOperator-based approach.
-      - Load tables sequentially : aircrafts_data → airport_data → bookings → tickets → seats → flights → ticket_flights → boarding_passes
-     
-  - ### [TRANSFORM Task](dags/flights_data_pipeline/tasks/transform/)
+- The **Extract** task is responsible for extracting data from the source PostgreSQL database and exporting it as CSV files to MinIO.
+- The source database is the **bookings** schema.
+- The task uses Airflow's **PythonOperator** to handle the extraction process.
+- Each table’s data is saved into a structured path in MinIO: `/extracted-data/temp/<table_name>.csv`.
+- The extraction tasks are designed to run in parallel for efficiency.
 
-      - This task executes Transform data from staging schema into dimension and fact tables in the data warehouse. For transformation task, I don't use transform.py.
-      - For transform tasks that simply execute static SQL files with PostgresOperator and there is no complex Python logic that needs to be encapsulated into a function (unlike
-        extract & load which accesses MinIO and upserts dataframes). PostgresOperator already executes the .sql file directly, so there is no need for Python wrapping., it is not
-        necessary to create transform.py as a module.
-      - Each SQL file (already provided) will transform staging data into cleaned and structured tables. Get transformations query here. Output tables are stored in the warehouse
-        schema, and follow naming conventions: dim_airport, dim_seat, dim_passenger, fct_booking_ticket, fct_flight_activity, etc.
-      - Make sure transformations are executed in the correct sequence to respect dependencies
+### [LOAD Task](dags/flights_data_pipeline/tasks/load.py)
+
+- The **Load** task reads the CSV files generated by the Extract task and loads them into the staging schema of the warehouse database.
+- The task uses the MinIO client to read the CSV files stored in MinIO.
+- The data is loaded into the **staging** schema (upsert process) within the warehouse database.
+- The task follows a **PythonOperator** approach.
+- The tables are loaded sequentially in the following order: `aircrafts_data → airports_data → bookings → tickets → seats → flights → ticket_flights → boarding_passes`.
+
+### [TRANSFORM Task](dags/flights_data_pipeline/tasks/transform/)
+
+- The **Transform** task is responsible for transforming raw data from the **staging** schema into dimension and fact tables in the data warehouse.
+- For the transformation process, I did not create a `transform.py` module as it was unnecessary. Instead, I used **PostgresOperator** to execute the transformation SQL queries directly.
+- Each SQL file (stored in the `transform` folder) performs the transformation and cleans the data according to the requirements of the data warehouse schema.
+- The output tables are stored in the warehouse schema and follow specific naming conventions, such as `dim_airport`, `dim_seat`, `dim_passenger`, `fct_booking_ticket`, and `fct_flight_activity`.
+- The transformations are executed in the correct sequence to ensure that the dependencies between the tasks are respected.
+
+This modular approach not only ensures a more organized codebase but also simplifies the management of the ELT pipeline in Airflow.
+
 ---
 ---
 # Run The Pipeline
 To run the pipeline, create [the script](dags/flights_data_pipeline/run.py) that will wrap all the orchestration. Here is the DAG detail:
 ```
-DAG ID	 : flights_data_pipeline
+DAG ID	     : flights_data_pipeline
 Schedule	 : Daily
 Start date	 : Now
 Catchup 	 : False
 ```
 
-After that, access apache airflow on localhost:[apache_port] and run the dag _flights_data_pipeline_. Below are the illustrations if all tasks run smoothly.
+After that, access apache airflow on localhost:[apache_port] and run the dag _flights_data_pipeline_. Below are the visualizations for successful task executions:
 ![DAG](records/dag.png)
 ![extract](records/extract_graph.png)
 ![load](records/load_graph.png)
@@ -264,13 +259,15 @@ After that, access apache airflow on localhost:[apache_port] and run the dag _fl
 ---
 # Conclusion
 
-Well, you’ve reached the end of this report. 
+Thank you for exploring this project. I hope the details provided help you understand the workflow and execution of the ELT pipeline. Should you have any questions, feedback, or suggestions, feel free to reach out.
 
-I hope you’ve gained valuable insights that will help you in your own data engineering journey. If you have any questions or need additional information, feel free to reach out. I’m open to any feedback or suggestions you may have.
-
-**You can read more project on:** 
+For more projects and insights, visit:
 
 - [My Medium](https://medium.com/@fajariana.tm)
+
+---
+
+This version of your `README.md` is more concise, professional, and presents the information in a clearer, more structured format. Let me know if you'd like to make further adjustments!
 
     
   
